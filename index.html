@@ -1,0 +1,333 @@
+import React, { useState, useEffect } from 'react';
+import { Plus, Minus, RotateCcw, Image as ImageIcon, Trash2, Wallet, Building2, PiggyBank, ReceiptText, RefreshCcw, Sparkles } from 'lucide-react';
+
+const App = () => {
+  // State for balances
+  const [balances, setBalances] = useState({
+    bank: 0,
+    wallet: 0,
+    savings: 0
+  });
+
+  // State for transactions
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('bank');
+
+  // State for notes
+  const [notes, setNotes] = useState([]);
+  const [noteInput, setNoteInput] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  // Updated color palette to All Pink Theme
+  const colors = {
+    background: '#FFF5F7', 
+    cardBg: '#FFFFFF',
+    primaryText: '#4B5563', 
+    secondaryText: '#9CA3AF', 
+    accentPink: '#F472B6',   // Pink Primary
+    accentPinkLight: '#FCE7F3', // Soft Pink
+    accentPinkDeep: '#DB2777',  // Deep Pink
+    border: '#FBCFE8',       // Pink Border
+  };
+
+  // URL for images provided by user
+  const headerBgImg = "https://i.postimg.cc/W1R2vghm/b192d7b93f431e5cc79a02177619e562.jpg";
+  const mainBgImg = "https://i.postimg.cc/YSRkYPbp/99a3645238bd3747f4cdddebb4c4bd03.jpg";
+
+  // Updated Gradient for Full Pink theme
+  const gradientClass = "bg-gradient-to-r from-pink-300 via-pink-400 to-rose-300";
+  const textGradientClass = "bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600";
+
+  const totalBalance = balances.bank + balances.wallet + balances.savings;
+
+  const handleTransaction = (type) => {
+    const val = parseFloat(amount);
+    if (isNaN(val) || val <= 0) return;
+
+    setBalances(prev => ({
+      ...prev,
+      [category]: type === 'deposit' ? prev[category] + val : Math.max(0, prev[category] - val)
+    }));
+    setAmount('');
+  };
+
+  const resetCategory = () => {
+    setBalances(prev => ({ ...prev, [category]: 0 }));
+  };
+
+  const resetAllBalances = () => {
+    setBalances({
+      bank: 0,
+      wallet: 0,
+      savings: 0
+    });
+  };
+
+  const addNote = () => {
+    if (!noteInput.trim() && !selectedImage) return;
+    const newNote = {
+      id: Date.now(),
+      text: noteInput,
+      image: selectedImage,
+      date: new Date().toLocaleString('th-TH')
+    };
+    setNotes([newNote, ...notes]);
+    setNoteInput('');
+    setSelectedImage(null);
+  };
+
+  const deleteNote = (id) => {
+    setNotes(notes.filter(n => n.id !== id));
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Floating Elements (Maintained structure with new emojis)
+  const floatingEmojis = [
+    { char: '🎀', top: '10%', left: '5%', delay: '0s', size: '24px' },
+    { char: '🐏', top: '25%', right: '8%', delay: '1s', size: '20px' },
+    { char: '✨', bottom: '15%', left: '10%', delay: '2s', size: '22px' },
+    { char: '💭', bottom: '30%', right: '5%', delay: '1.5s', size: '26px' },
+    { char: '🎀', top: '50%', left: '3%', delay: '0.5s', size: '18px' },
+    { char: '🐏', top: '5%', right: '15%', delay: '2.5s', size: '20px' },
+  ];
+
+  return (
+    <div 
+      className="min-h-screen pb-10 font-sans relative overflow-x-hidden bg-fixed bg-cover bg-center" 
+      style={{ backgroundImage: `url(${mainBgImg})` }}
+    >
+      {/* CSS Animations */}
+      <style>
+        {`
+          @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+          }
+          .animate-float {
+            animation: float 4s ease-in-out infinite;
+          }
+        `}
+      </style>
+
+      {/* Floating Emojis Background Layer */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {floatingEmojis.map((emoji, index) => (
+          <div
+            key={index}
+            className="absolute animate-float opacity-40 select-none"
+            style={{
+              top: emoji.top,
+              left: emoji.left,
+              right: emoji.right,
+              bottom: emoji.bottom,
+              animationDelay: emoji.delay,
+              fontSize: emoji.size,
+            }}
+          >
+            {emoji.char}
+          </div>
+        ))}
+      </div>
+
+      {/* Main Content Layer */}
+      <div className="relative z-10 w-full max-w-md mx-auto pt-8 px-4">
+        
+        {/* Badges Section (Mandatory Keep) */}
+        <div className="flex justify-center gap-2 mb-4">
+           <div className="px-3 py-1 bg-pink-500 text-white text-[10px] rounded-full shadow-sm">Online</div>
+           <div className="px-3 py-1 bg-white/80 text-pink-500 text-[10px] rounded-full shadow-sm border border-pink-200">System Ready</div>
+        </div>
+
+        {/* Status Bar Section (Mandatory Keep) */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-3 mb-6 border border-pink-100 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse"></div>
+                <span className="text-[11px] font-bold text-pink-400">Queue Status: Available 🎀</span>
+            </div>
+            {/* Dotted Button Section (Mandatory Keep) */}
+            <button className="border-2 border-dashed border-pink-200 px-3 py-1 rounded-lg text-[10px] text-pink-300 font-bold hover:bg-pink-50 transition-colors">
+                Check Queue
+            </button>
+        </div>
+
+        {/* Header / Profile Section (Mandatory Structure) */}
+        <div className={`relative bg-white/80 backdrop-blur-sm rounded-[2rem] shadow-xl overflow-hidden mb-8 border-b-4 transition-all hover:shadow-2xl`} style={{ borderColor: colors.border }}>
+          <div 
+            className="h-28 bg-cover bg-center" 
+            style={{ backgroundImage: `url(${headerBgImg})` }}
+          ></div>
+          <div className="flex flex-col items-center -mt-14 pb-6 relative z-10">
+            <div className="w-28 h-28 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-100">
+               <img src="https://i.postimg.cc/P5DBz7fB/adf96e0577f19beb7aaacfaa40dfdeb5.jpg" alt="Profile" className="w-full h-full object-cover" />
+            </div>
+            <h1 className={`mt-3 text-2xl font-extrabold ${textGradientClass}`}>wallet per</h1>
+            <p className="text-sm opacity-70" style={{ color: colors.secondaryText }}>บันทึกรายรับ-รายจ่ายของเป้อ 🎀🐏</p>
+          </div>
+        </div>
+
+        {/* Balance Grid */}
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="bg-white/90 backdrop-blur-sm p-4 rounded-3xl shadow-sm border text-center transition-transform hover:scale-105" style={{ borderColor: colors.border }}>
+            <Building2 size={24} className="mx-auto mb-2 text-pink-400" />
+            <p className="text-xs font-bold" style={{ color: colors.secondaryText }}>ธนาคาร</p>
+            <p className="text-base font-black truncate" style={{ color: colors.primaryText }}>{balances.bank.toLocaleString()}</p>
+          </div>
+          <div className="bg-white/90 backdrop-blur-sm p-4 rounded-3xl shadow-sm border text-center transition-transform hover:scale-105" style={{ borderColor: colors.border }}>
+            <Wallet size={24} className="mx-auto mb-2 text-pink-500" />
+            <p className="text-xs font-bold" style={{ color: colors.secondaryText }}>ทรูมันนี่</p>
+            <p className="text-base font-black truncate" style={{ color: colors.primaryText }}>{balances.wallet.toLocaleString()}</p>
+          </div>
+          <div className="bg-white/90 backdrop-blur-sm p-4 rounded-3xl shadow-sm border text-center transition-transform hover:scale-105" style={{ borderColor: colors.border }}>
+            <PiggyBank size={24} className="mx-auto mb-2 text-pink-300" />
+            <p className="text-xs font-bold" style={{ color: colors.secondaryText }}>เงินเก็บ</p>
+            <p className="text-base font-black truncate" style={{ color: colors.primaryText }}>{balances.savings.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* Total Summary */}
+        <div className={`bg-white/90 backdrop-blur-sm p-5 rounded-[2rem] shadow-md border-l-8 mb-6 flex justify-between items-center`} style={{ borderColor: colors.accentPink }}>
+          <span className="font-bold text-lg flex items-center gap-2" style={{ color: colors.primaryText }}>
+            <Sparkles size={18} className="text-pink-400" /> รวมยอดเงินทั้งหมด
+          </span>
+          <div className="flex flex-col items-end">
+             <span className={`text-3xl font-black ${textGradientClass}`}>฿{totalBalance.toLocaleString()}</span>
+          </div>
+        </div>
+
+        {/* Transaction Control Area */}
+        <div className="bg-white/95 backdrop-blur-sm p-6 rounded-[2.5rem] shadow-lg border mb-8" style={{ borderColor: colors.border }}>
+          <label className="block text-sm font-bold mb-3 uppercase tracking-wider text-center" style={{ color: colors.accentPink }}>เลือกบัญชีที่ต้องการจัดการ 💭</label>
+          <div className="flex gap-2 mb-6 p-1 bg-pink-50 rounded-full">
+            {['bank', 'wallet', 'savings'].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                className={`flex-1 py-3 text-sm rounded-full font-bold transition-all duration-300 ${category === cat ? `bg-pink-500 text-white shadow-md transform scale-105` : 'text-pink-300 hover:bg-white/50'}`}
+              >
+                {cat === 'bank' ? 'ธนาคาร' : cat === 'wallet' ? 'ทรูมันนี่' : 'เงินเก็บ'}
+              </button>
+            ))}
+          </div>
+
+          <div className="relative mb-6">
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.00"
+              className="w-full text-4xl font-black text-center py-5 bg-pink-50/30 rounded-3xl border-2 border-transparent focus:border-pink-300 outline-none transition-all placeholder-pink-200"
+              style={{ color: colors.primaryText }}
+            />
+            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-pink-300 font-black text-2xl">฿</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <button
+              onClick={() => handleTransaction('deposit')}
+              className={`flex items-center justify-center gap-2 py-4 rounded-full text-white font-bold shadow-lg active:scale-95 transition-transform bg-gradient-to-r from-pink-400 to-rose-400`}
+            >
+              <Plus size={22} /> ฝากเงิน 🎀
+            </button>
+            <button
+              onClick={() => handleTransaction('withdraw')}
+              className={`flex items-center justify-center gap-2 py-4 rounded-full text-white font-bold shadow-lg active:scale-95 transition-transform bg-gradient-to-r from-rose-400 to-pink-500`}
+            >
+              <Minus size={22} /> ถอนเงิน 🐏
+            </button>
+          </div>
+          
+          <div className="space-y-3">
+            <button
+              onClick={resetCategory}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-full font-bold border-2 transition-colors active:bg-pink-50 text-pink-400 border-pink-100 hover:bg-pink-50"
+            >
+              <RotateCcw size={18} /> รีเซ็ตเฉพาะบัญชีนี้ ✨️
+            </button>
+            
+            <button
+              onClick={resetAllBalances}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-full font-bold text-white shadow-md transition-all active:scale-95 hover:opacity-90 bg-gradient-to-r from-pink-400 via-rose-400 to-pink-600"
+            >
+              <RefreshCcw size={18} /> รีเซ็ตยอดเงินทุกบัญชีเป็น 0 💭
+            </button>
+          </div>
+        </div>
+
+        {/* Notes Section */}
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className={`font-bold flex items-center gap-2 text-xl ${textGradientClass}`}>
+            <ReceiptText size={24} className="text-pink-500" /> บันทึกช่วยจำ 🎀
+          </h2>
+        </div>
+
+        <div className="bg-white/90 backdrop-blur-sm p-5 rounded-[2.5rem] shadow-lg border mb-8" style={{ borderColor: colors.border }}>
+          <textarea
+            value={noteInput}
+            onChange={(e) => setNoteInput(e.target.value)}
+            placeholder="เขียนโน๊ตของคุณที่นี่..."
+            className="w-full h-28 p-4 bg-pink-50/20 rounded-2xl border-none focus:ring-2 focus:ring-pink-200 outline-none resize-none mb-4 text-sm placeholder-pink-300"
+            style={{ color: colors.primaryText }}
+          ></textarea>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex gap-2">
+              <label className="cursor-pointer p-3 rounded-full bg-pink-100 text-pink-600 hover:bg-pink-200 transition-colors relative shadow-sm">
+                <ImageIcon size={22} />
+                <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                {selectedImage && <div className="absolute -top-1 -right-1 w-4 h-4 bg-pink-400 rounded-full border-2 border-white"></div>}
+              </label>
+            </div>
+            <button
+              onClick={addNote}
+              className={`px-8 py-3 rounded-full font-bold text-white shadow-md active:scale-95 transition-transform flex items-center gap-2 ${gradientClass}`}
+            >
+              <Plus size={20} /> เพิ่มโน๊ต ✨️
+            </button>
+          </div>
+        </div>
+
+        {/* Notes List */}
+        <div className="space-y-5">
+          {notes.length === 0 ? (
+            <div className="text-center py-12 text-pink-300 italic text-base font-medium">โน๊ตตรงนี้เลยน้า 🐏✨️</div>
+          ) : (
+            notes.map(note => (
+              <div key={note.id} className="bg-white/90 backdrop-blur-sm rounded-[2rem] shadow-md border overflow-hidden animate-in fade-in slide-in-from-bottom-3 hover:shadow-lg transition-shadow" style={{ borderColor: colors.border }}>
+                {note.image && (
+                  <div className="h-56 overflow-hidden">
+                    <img src={note.image} alt="Note Attachment" className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" />
+                  </div>
+                )}
+                <div className="p-5">
+                  <p className="text-base whitespace-pre-wrap mb-4" style={{ color: colors.primaryText }}>{note.text}</p>
+                  <div className="flex justify-between items-center pt-4 border-t" style={{ borderColor: colors.border }}>
+                    <span className="text-xs font-medium uppercase" style={{ color: colors.secondaryText }}>{note.date}</span>
+                    <button 
+                      onClick={() => deleteNote(note.id)}
+                      className="p-2 text-rose-300 hover:text-rose-500 transition-colors bg-rose-50 rounded-full hover:bg-rose-100"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
